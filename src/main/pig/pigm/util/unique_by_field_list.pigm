@@ -1,0 +1,34 @@
+/******************************
+unique_by_field_list
+
+Author: Pat McCarthy
+Date: 2012-07-09
+
+Usage:
+This macro takes 3 values:
+input_relation: the relation you are going to unique
+field_list: a string of fields you wish to ensure uniqueness of
+sort_order: the sort order you want to choose your uniqued data.
+
+for instance, say you had relation foo with fields:
+foo: {(f1:chararray, f2:int, f3:int, f4:int, f5:int)}
+and you wanted one row for each combination of ( f1, f2 ), with priority decided by f3 ASC, then f4 DESC
+
+you would call:
+bar = unique_by_field_list( foo, 'f1, f2', 'f3 ASC, f4 DESC' );
+
+*******************************/
+
+DEFINE unique_by_field_list( input_relation, field_list, sort_order ) RETURNS uniqued_data {
+
+  field_list_group = GROUP $input_relation BY $field_list;
+
+  $uniqued_data = FOREACH field_list_group {
+    ordered_input = ORDER $input_relation BY $sort_order;
+    top_input = LIMIT ordered_input 1;
+
+    GENERATE
+      FLATTEN( top_input )
+    ;
+  }
+};
